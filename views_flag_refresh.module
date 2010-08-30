@@ -1,0 +1,86 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Views Flag Refresh allows site administrators to configure which views are
+ * refreshed automatically via AJAX when certain flags are selected.
+ */
+
+/**
+ * Implementation of hook_init().
+ */
+function views_flag_refresh_init() {
+  drupal_add_js(drupal_get_path('module', 'views_flag_refresh') .'/views_flag_refresh.js');
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function views_flag_refresh_theme() {
+  return array();
+}
+
+/**
+ * Implementation of hook_form_FORM_ID_alter().
+ */
+function views_flag_refresh_form_views_ui_edit_display_form_alter(&$form, &$form_state) {
+  if ('use_ajax' == $form_state['section']) {
+
+    // Gets all flags, populates array of options.
+    $options = array();
+    foreach (flag_get_flags() as $flag_id => $flag) {
+      $options[$flag_id] = check_plain($flag->title);
+    }
+
+    // Gets display, adds checkboxes for user to select flags.
+    $display = &$form_state['view']->display[$form_state['display_id']];
+    $form['use_ajax_flags'] = array(
+      '#type' => 'checkboxes',
+      '#title' => t('Refresh display on flags'),
+      '#options' => $options,
+      '#default_value' => (array)$display->handler->get_option('use_ajax_flags'),
+      '#description' => t('Refreshes the display via AJAX whenever a user clicks one of the selected flags. This will only take effect if the <em>Use AJAX</em> option is set to <em>Yes</em>.'),
+    );
+
+    // Makes sure buttons are at the bottom.
+    $form['buttons']['#weight'] = 10;
+
+    // Adds our custom submit handler before the default so we don't have to
+    // re-cache the view in order to add our custom option.
+    // NOTE: $form['#submit'] doesn't work here.
+    array_unshift(
+      $form['buttons']['submit']['#submit'],
+      'views_flag_refresh_views_ui_edit_display_form_submit'
+    );
+  }
+}
+
+/**
+ * Processes views_ui_edit_display_form form submissions.
+ */
+function views_flag_refresh_views_ui_edit_display_form_submit(&$form, &$form_state) {
+  $display = &$form_state['view']->display[$form_state['display_id']];
+  $display->handler->set_option('use_ajax_flags', $form_state['values']['use_ajax_flags']);
+}
+
+/**
+ * Preprocess the primary theme implementation for a view, adds our information
+ * to the JavaScript settings.
+ */
+function views_flag_refresh_preprocess_views_view(&$vars) {
+  $view = $vars['view'];
+
+  // If the views used AJAX, adds our settings.
+  if ($view->use_ajax) {
+    $settings = array('viewsFlagRefresh' => array());
+    $flags = (array)$view->display_handler->get_option('use_ajax_flags');
+    foreach ($flags as $flag_name => $enabled) {
+      if ($enabled) {
+        $key = $view->name .'-'. $view->current_display;
+        $settings['viewsFlagRefresh'][$flag_name][$key] = TRUE;
+      }
+    }
+    drupal_add_js($settings, 'setting');
+  }
+}
