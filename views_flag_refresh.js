@@ -161,11 +161,7 @@ viewsFlagRefresh.theme.prototype.throbber = function(target) {
   // Adds our throbber to the middle of the view.
   // NOTE: The throbber image is 32px wide.
   var pos = $(container).position();
-  var throbber = $('<img src="' + Drupal.settings.viewsFlagRefresh.imagePath + '/throbber.gif" />')
-    .css('position', 'absolute')
-    .css('margin', '0')
-    .css('padding', '0')
-    .css('z-index', '1000')
+  var throbber = $('<img src="' + Drupal.settings.viewsFlagRefresh.imagePath + '/throbber.gif" class="views_flag_refresh-throbber" />')
     .css('left', pos.left + ($(container).outerWidth() / 2) - 16)
     .css('top', pos.top + ($(container).outerHeight() / 2) - 16)
     .insertAfter(target);

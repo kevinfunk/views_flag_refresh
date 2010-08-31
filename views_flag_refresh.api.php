@@ -19,7 +19,8 @@ function hook_views_flag_refresh_widgets() {
     'title'       => t('Throbber image'),
     'theme hook'  => 'throbber',
     'description' => t('Test'),
-    'file'        => drupal_get_path('module', 'views_flag_refresh') .'/views_flag_refresh.js',
+    'js file'     => drupal_get_path('module', 'views_flag_refresh') .'/views_flag_refresh.js',
+    'css file'    => drupal_get_path('module', 'views_flag_refresh') .'/views_flag_refresh.css',
   );
 
   return $widgets;

@@ -146,13 +146,16 @@ function views_flag_refresh_add_js($view) {
   foreach ($flags as $flag_name => $enabled) {
     if ($enabled) {
 
-      // Gets widget information, adds javascript file if defined.
+      // Gets widget information, adds javascript, CSS files if defined.
       if (!$widget = $view->display_handler->get_option('use_ajax_flags_widget')) {
         $widget = 'default';
       }
       $hook = isset($widgets[$widget]) ? $widgets[$widget]['theme hook'] : TRUE;
-      if (isset($widgets[$widget]['file'])) {
-        drupal_add_js($widgets[$widget]['file']);
+      if (isset($widgets[$widget]['js file'])) {
+        drupal_add_js($widgets[$widget]['js file']);
+      }
+      if (isset($widgets[$widget]['css file'])) {
+        drupal_add_css($widgets[$widget]['css file']);
       }
 
       // Adds widget information to the javascript settings.
@@ -179,6 +182,7 @@ function views_flag_refresh_views_flag_refresh_widgets() {
     'title'       => t('Throbber image'),
     'theme hook'  => 'throbber',
     'description' => t('Display a throbber image in place of the view content while it is being refreshed.'),
+    'css file'    => drupal_get_path('module', 'views_flag_refresh') .'/views_flag_refresh.css',
   );
 
   return $widgets;
