@@ -125,7 +125,10 @@ viewsFlagRefresh.prototype.ajax = function(settings) {
  * @param themeHook
  *   The theme hook being invoked.
  * @param target
- *   A jQuery object containing the view being refreshed. 
+ *   A jQuery object containing the view being refreshed.
+ * @return
+ *   Invokes the theme hook, returns any elements that need to be removed prior
+ *   to the view content being reloaded. 
  */
 viewsFlagRefresh.themeHookInvoke = function(themeHook, target) {
   var theme = new viewsFlagRefresh.theme();
@@ -136,14 +139,14 @@ viewsFlagRefresh.themeHookInvoke = function(themeHook, target) {
 }
 
 /**
- * Contructor for our pseudo theme system.
+ * Contructor for our pseudo theme system class.
  */
 viewsFlagRefresh.theme = function() {
   // Nothing to be done here.
 }
 
 /**
- * Adds a 
+ * Adds a throbber image to the view content while it is being refreshed.
  * 
  * @param target
  *   A jQuery object containing the view being refreshed.
