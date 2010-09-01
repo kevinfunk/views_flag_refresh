@@ -59,6 +59,49 @@ viewsFlagRefresh.prototype.refresh = function(viewName, viewDisplayId) {
 }
 
 /**
+ * Returns a key / value pair to be uses as settings by the ajax methods.
+ * 
+ * @param target
+ *   A jQuery object pointing to the element being refreshed via AJAX.
+ * @param view
+ *   A jQuery object pointing to the view.
+ * @param themeElement
+ *   A jQuery object containing any elements added to the DOM by the theme.
+ * @param settings
+ *   The view's AJAX settings passed through Drupal.settings.views.ajaxViews.
+ * @return
+ *   The AJAX settings.
+ */
+viewsFlagRefresh.ajaxSettings = function(target, view, settings, themeElement) {
+  return {
+    url: viewsFlagRefresh.ajaxPath(),
+    type: 'GET',
+    data: settings,
+    success: function(response) {
+      // Cleans up any elements left over from theming.
+      if (themeElement) {
+        $(themeElement).remove();
+      }
+      // Adds content retrieved from call.
+      if (response.__callbacks) {
+        $.each(response.__callbacks, function(i, callback) {
+          eval(callback)(target, response);
+        });
+      }
+    },
+    error: function() {
+      // Cleans up any elements left over from theming.
+      if (themeElement) {
+        $(themeElement).remove();
+      }
+      // Handles errors gracefully.
+      Drupal.Views.Ajax.handleErrors(xhr, viewsFlagRefresh.ajaxPath());
+    },
+    dataType: 'json'
+  };
+}
+
+/**
  * Refreshes a view via AJAX if it is configured to do so.
  * 
  * @param settings
@@ -85,37 +128,16 @@ viewsFlagRefresh.prototype.ajax = function(settings) {
     // elements added by the widget for cleanup.
     var themeElement = viewsFlagRefresh.themeHookInvoke(themeHook, target);
     
-    // Refreshes view via AJAX.
-    $.ajax({
-      url: viewsFlagRefresh.ajaxPath(),
-      type: 'GET',
-      data: settings,
-      success: function(response) {
-        // Cleans up any elements left over from theming.
-        if (themeElement) {
-          $(themeElement).remove();
-        }
-        // Adds content retrieved from call.
-        if (response.__callbacks) {
-          $.each(response.__callbacks, function(i, callback) {
-           // Temporary remove the ajax-form class to avoid behavior to be
-           // attached twice (or the form would be sent twice).
-           $('.ajax-form').removeClass('ajax-form').addClass('ajax-form-temp');
-            eval(callback)(target, response);
-            $('.ajax-form-temp').addClass('ajax-form');
-          });
-        }
-      },
-      error: function() {
-        // Cleans up any elements left over from theming.
-        if (themeElement) {
-          $(themeElement).remove();
-        }
-        alert(Drupal.t("An error occurred at @path.", {'@path': viewsFlagRefresh.ajaxPath()}));
-      },
-      dataType: 'json'
-    });
-    
+    // Gets AJAX settings, either refreshes the view or submits the exposed
+    // filter form. This latter refreshes the view and maintains the filters.
+    var ajaxSettings = viewsFlagRefresh.ajaxSettings(target, view, settings, themeElement);
+    var exposedForm = $('form#views-exposed-form-' + settings.view_name.replace(/_/g, '-') + '-' + settings.view_display_id.replace(/_/g, '-'));
+    if (exposedForm.size()) {
+      $(exposedForm).ajaxSubmit(ajaxSettings);
+    }
+    else {
+      $.ajax(ajaxSettings);
+    }
   });
 }
 
