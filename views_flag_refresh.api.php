@@ -34,5 +34,5 @@ function hook_views_flag_refresh_widgets() {
  */
 function hook_views_flag_refresh_widgets_alter(&$widgets) {
   $widgets['throbber']['theme hook'] = 'betterThrobber';
-  $widgets['throbber']['file'] = drupal_get_path('module', 'mymodule') .'/mymodule.js';
+  $widgets['throbber']['js file'] = drupal_get_path('module', 'mymodule') .'/mymodule.js';
 }
