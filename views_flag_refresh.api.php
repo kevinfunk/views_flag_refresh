@@ -15,13 +15,38 @@
 function hook_views_flag_refresh_widgets() {
   $widgets = array();
 
+  // Array keys are the machine readable name of the widget.
   $widgets['throbber'] = array(
-    'title'           => t('Throbber image'),
-    'theme hook'      => 'throbber',
+
+    // The human-readable name of the widget.
+    'title' => t('Throbber image'),
+
+    // The name of the method in the ViewsFlagRefresh.theme javascript class
+    // that is called after the flag has been selected and before the data has
+    // been returned by the AJAX call.
+    // (OPTIONAL)
+    'theme hook' => 'throbber',
+
+    // The name of the method in the ViewsFlagRefresh.theme javascript class
+    // that is called after the data has been returned by the AJAX call. This is
+    // normally implemented to clean up any elements added to the the DOM by the
+    // method defined in the "theme hook" key above.
+    // (OPTIONAL)
     'theme hook post' => 'throbberPost',
-    'description'     => t('Display a throbber image in place of the view content while it is being refreshed.'),
-    'js file'         => drupal_get_path('module', 'views_flag_refresh') .'/views_flag_refresh.js',
-    'css file'        => drupal_get_path('module', 'views_flag_refresh') .'/views_flag_refresh.css',
+
+    // A brief description of what the widget does.
+    // (OPTIONAL)
+    'description' => t('Display a throbber image in place of the view content while it is being refreshed.'),
+
+    // Specifies a javascript file that must be loaded to render the widget.
+    // Usually the file contains the methods defined in the "theme hook" and
+    // "theme hook post" keys above.
+    // (OPTIONAL)
+    'js file' => drupal_get_path('module', 'views_flag_refresh') .'/views_flag_refresh.js',
+
+    // Specifies a CSS file that must be loaded to render the widget properly.
+    // (OPTIONAL)
+    'css file' => drupal_get_path('module', 'views_flag_refresh') .'/views_flag_refresh.css',
   );
 
   return $widgets;
@@ -34,6 +59,8 @@ function hook_views_flag_refresh_widgets() {
  *   An array of widget definitions.
  */
 function hook_views_flag_refresh_widgets_alter(&$widgets) {
+  // NOTE: This code is for demonstration purposes only. We are probably better
+  // off creating another widget.
   $widgets['throbber']['theme hook'] = 'betterThrobber';
   $widgets['throbber']['js file'] = drupal_get_path('module', 'mymodule') .'/mymodule.js';
 }
