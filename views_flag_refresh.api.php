@@ -22,15 +22,15 @@ function hook_views_flag_refresh_widgets() {
     'title' => t('Throbber image'),
 
     // The name of the method in the ViewsFlagRefresh.theme javascript class
-    // that is called after the flag has been selected and before the data has
-    // been returned by the AJAX call.
+    // that is called after the flag action has been completed and before the
+    // Views AJAX request is executed.
     // (OPTIONAL)
     'theme hook' => 'throbber',
 
     // The name of the method in the ViewsFlagRefresh.theme javascript class
-    // that is called after the data has been returned by the AJAX call. This is
-    // normally implemented to clean up any elements added to the the DOM by the
-    // method defined in the "theme hook" key above.
+    // that is called after the data has been returned by the Views AJAX
+    // request. This is normally implemented to clean up any elements added to
+    // the the DOM by the method defined in the "theme hook" key above.
     // (OPTIONAL)
     'theme hook post' => 'throbberPost',
 
