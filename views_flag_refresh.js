@@ -36,8 +36,8 @@ viewsFlagRefresh.ajaxPath = function() {
 }
 
 /**
- * Checks if the view is configured to refresh when the this.flagName flag has
- * been selected.
+ * Returns the widget settings associated with the view. Returns false if the
+ * view isn't set to refresh on this flag.
  * 
  * @param viewName
  *   The name of the view we are running the check against.
@@ -47,7 +47,7 @@ viewsFlagRefresh.ajaxPath = function() {
  *   A string containing the theme hook used to theme the view as it is being
  *   refreshed, a boolean false if the view should not be refreshed at all.
  */
-viewsFlagRefresh.prototype.refresh = function(viewName, viewDisplayId) {
+viewsFlagRefresh.prototype.widgetSettings = function(viewName, viewDisplayId) {
   var settings = Drupal.settings.viewsFlagRefresh.flags;
   for (var flagName in settings) {
     functionName = viewName + '-' + viewDisplayId;
@@ -61,40 +61,36 @@ viewsFlagRefresh.prototype.refresh = function(viewName, viewDisplayId) {
 /**
  * Returns a key / value pair to be uses as settings by the ajax methods.
  * 
- * @param target
- *   A jQuery object pointing to the element being refreshed via AJAX.
  * @param view
- *   A jQuery object pointing to the view.
- * @param themeElement
- *   A jQuery object containing any elements added to the DOM by the theme.
+ *   a jQuery object containing the view.
  * @param settings
- *   The view's AJAX settings passed through Drupal.settings.views.ajaxViews.
+ *   The View's AJAX settings.
+ * @param theme
+ *   The theme object.
  * @return
  *   The AJAX settings.
  */
-viewsFlagRefresh.ajaxSettings = function(target, view, settings, themeElement) {
+viewsFlagRefresh.ajaxSettings = function(view, settings, theme) {
   return {
     url: viewsFlagRefresh.ajaxPath(),
     type: 'GET',
     data: settings,
     success: function(response) {
-      // Cleans up any elements left over from theming.
-      if (themeElement) {
-        $(themeElement).remove();
-      }
-      // Adds content retrieved from call.
+      // Invokes theme hook, adds content retrieved from call.
       if (response.__callbacks) {
         $.each(response.__callbacks, function(i, callback) {
-          eval(callback)(target, response);
+          eval(callback)(theme.target, response);
+          // @todo Use an alternate callback so we don't have to do this??
+          $(view).filter(function() { return !$(this).parents('.view').size(); }).each(function() {
+            theme.target = this;
+            theme.hookInvoke('themeHookPost');
+          });
         });
       }
     },
     error: function() {
-      // Cleans up any elements left over from theming.
-      if (themeElement) {
-        $(themeElement).remove();
-      }
-      // Handles errors gracefully.
+      // Invokes theme hook, handles errors gracefully.
+      theme.hookInvoke('themeHookPost');
       Drupal.Views.Ajax.handleErrors(xhr, viewsFlagRefresh.ajaxPath());
     },
     dataType: 'json'
@@ -109,8 +105,8 @@ viewsFlagRefresh.ajaxSettings = function(target, view, settings, themeElement) {
  */
 viewsFlagRefresh.prototype.ajax = function(settings) {
   // Bails if the view shouldn't be refreshed when this flag is selected.
-  var themeHook = this.refresh(settings.view_name, settings.view_display_id);
-  if (!themeHook) {
+  var widgetSettings = this.widgetSettings(settings.view_name, settings.view_display_id);
+  if (!widgetSettings) {
     return;
   }
 
@@ -124,13 +120,13 @@ viewsFlagRefresh.prototype.ajax = function(settings) {
   $(view).filter(function() { return !$(this).parents('.view').size(); }).each(function() {
     var target = this;
     
-    // Invokes the theme hook that calls the refresh widget, captures any
-    // elements added by the widget for cleanup.
-    var themeElement = viewsFlagRefresh.themeHookInvoke(themeHook, target);
+    // Instantiates the theme object, invokes the widget's theme hook.
+    var theme = new viewsFlagRefresh.theme(target, widgetSettings);
+    theme.hookInvoke('themeHook');
     
     // Gets AJAX settings, either refreshes the view or submits the exposed
     // filter form. This latter refreshes the view and maintains the filters.
-    var ajaxSettings = viewsFlagRefresh.ajaxSettings(target, view, settings, themeElement);
+    var ajaxSettings = viewsFlagRefresh.ajaxSettings(view, settings, theme);
     var exposedForm = $('form#views-exposed-form-' + settings.view_name.replace(/_/g, '-') + '-' + settings.view_display_id.replace(/_/g, '-'));
     if (exposedForm.size()) {
       $(exposedForm).ajaxSubmit(ajaxSettings);
@@ -142,52 +138,59 @@ viewsFlagRefresh.prototype.ajax = function(settings) {
 }
 
 /**
- * Class method that invokes the theme hook.
+ * Contructor for our pseudo theme system class.
  * 
- * @param themeHook
- *   The theme hook being invoked.
  * @param target
- *   A jQuery object containing the view being refreshed.
- * @return
- *   Invokes the theme hook, returns any elements that need to be removed prior
- *   to the view content being reloaded. 
+ *   A jQuery object containing the content being refreshed.
+ * @param settings
+ *   The widget settings.
  */
-viewsFlagRefresh.themeHookInvoke = function(themeHook, target) {
-  var theme = new viewsFlagRefresh.theme();
-  if (themeHook in theme) {
-    return theme[themeHook](target);
+viewsFlagRefresh.theme = function(target, settings) {
+  this.target = target;
+  this.settings = settings;
+}
+
+/**
+ * Invokes a hook in the theme object.
+ * 
+ * @param hookType
+ *   The hook type being invoked, i.e. 'themeHook', 'themeHookPost'.
+ * @return
+ *   A boolean flagging whether the hook exists.
+ */
+viewsFlagRefresh.theme.prototype.hookInvoke = function(hookType) {
+  if (hookType in this.settings && this.settings[hookType] in this) {
+    this[this.settings[hookType]]();
+    return true;
   }
   return false;
 }
 
 /**
- * Contructor for our pseudo theme system class.
- */
-viewsFlagRefresh.theme = function() {
-  // Nothing to be done here.
-}
-
-/**
  * Adds a throbber image to the view content while it is being refreshed.
- * 
- * @param target
- *   A jQuery object containing the view being refreshed.
  */
-viewsFlagRefresh.theme.prototype.throbber = function(target) {
+viewsFlagRefresh.theme.prototype.throbber = function() {
   // Hide the content of the view.
-  $(target).css('visibility', 'hidden');
+  $(this.target).css('visibility', 'hidden');
   
   // Captures parent, as the view is usually in something such as a block.
-  var container = $(target).parent();
+  var container = $(this.target).parent();
   
   // Adds our throbber to the middle of the view.
   // NOTE: The throbber image is 32px wide.
   var pos = $(container).position();
-  var throbber = $('<img src="' + Drupal.settings.viewsFlagRefresh.imagePath + '/throbber.gif" class="views_flag_refresh-throbber" />')
+  this.throbberElement = $('<img src="' + Drupal.settings.viewsFlagRefresh.imagePath + '/throbber.gif" class="views_flag_refresh-throbber" />')
     .css('left', pos.left + ($(container).outerWidth() / 2) - 16)
     .css('top', pos.top + ($(container).outerHeight() / 2) - 16)
-    .insertAfter(target);
-  
-  // Returns the element we added for cleanup.
-  return throbber;
+    .insertAfter(this.target);
+}
+
+/**
+ * Cleans up the throbber image.
+ * 
+ * @param target
+ *   A jQuery object containing the view being refreshed.
+ */
+viewsFlagRefresh.theme.prototype.throbberPost = function() {
+  $(this.throbberElement).remove();
 }

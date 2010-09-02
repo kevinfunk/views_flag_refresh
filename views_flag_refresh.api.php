@@ -16,11 +16,12 @@ function hook_views_flag_refresh_widgets() {
   $widgets = array();
 
   $widgets['throbber'] = array(
-    'title'       => t('Throbber image'),
-    'theme hook'  => 'throbber',
-    'description' => t('Test'),
-    'js file'     => drupal_get_path('module', 'views_flag_refresh') .'/views_flag_refresh.js',
-    'css file'    => drupal_get_path('module', 'views_flag_refresh') .'/views_flag_refresh.css',
+    'title'           => t('Throbber image'),
+    'theme hook'      => 'throbber',
+    'theme hook post' => 'throbberPost',
+    'description'     => t('Display a throbber image in place of the view content while it is being refreshed.'),
+    'js file'         => drupal_get_path('module', 'views_flag_refresh') .'/views_flag_refresh.js',
+    'css file'        => drupal_get_path('module', 'views_flag_refresh') .'/views_flag_refresh.css',
   );
 
   return $widgets;
