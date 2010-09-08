@@ -129,10 +129,10 @@ viewsFlagRefresh.prototype.ajax = function(settings) {
     var ajaxSettings = viewsFlagRefresh.ajaxSettings(view, settings, theme);
     var exposedForm = $('form#views-exposed-form-' + settings.view_name.replace(/_/g, '-') + '-' + settings.view_display_id.replace(/_/g, '-'));
     if (exposedForm.size()) {
-      $(exposedForm).ajaxSubmit(ajaxSettings);
+      setTimeout(function() { $(exposedForm).ajaxSubmit(ajaxSettings); }, theme.timeout);
     }
     else {
-      $.ajax(ajaxSettings);
+      setTimeout(function() { $.ajax(ajaxSettings); }, theme.timeout);
     }
   });
 }
@@ -146,7 +146,8 @@ viewsFlagRefresh.prototype.ajax = function(settings) {
  *   The widget settings.
  */
 viewsFlagRefresh.theme = function(target, settings) {
-  this.target = target;
+  this.timeout  = 0;
+  this.target   = target;
   this.settings = settings;
 }
 
