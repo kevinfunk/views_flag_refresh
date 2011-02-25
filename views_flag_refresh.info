@@ -1,4 +1,3 @@
-; $Id$
 name = Views Flag Refresh
 description = Views Flag Refresh allows site administrators to configure which views are refreshed automatically via AJAX when certain flags are selected.
 dependencies[] = flag

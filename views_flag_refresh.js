@@ -1,4 +1,3 @@
-// $Id$
 
 /**
  * Event handler that listens for flags selected by the user.
