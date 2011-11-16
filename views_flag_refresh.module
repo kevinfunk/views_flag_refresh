@@ -47,7 +47,8 @@ function views_flag_refresh_widget_options_get() {
  *   An array of widget definitions.
  */
 function views_flag_refresh_widgets_get($reset = FALSE) {
-  static $widgets;
+  $widgets = drupal_static(__FUNCTION__);
+
   if (NULL === $widgets) {
     $widgets = module_invoke_all('views_flag_refresh_widgets');
     drupal_alter('views_flag_refresh_widgets', $widgets);
@@ -60,9 +61,10 @@ function views_flag_refresh_widgets_get($reset = FALSE) {
  */
 function views_flag_refresh_form_views_ui_edit_display_form_alter(&$form, &$form_state) {
   if ('use_ajax' == $form_state['section']) {
+
     $display = &$form_state['view']->display[$form_state['display_id']];
 
-    $form['use_ajax_flags'] = array(
+    $form['options']['use_ajax_flags'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Refresh display on flags'),
       '#options' => views_flag_refresh_flag_options_get(),
@@ -71,16 +73,13 @@ function views_flag_refresh_form_views_ui_edit_display_form_alter(&$form, &$form
     );
 
     $default_value = $display->handler->get_option('use_ajax_flags_widget');
-    $form['use_ajax_flags_widget'] = array(
+    $form['options']['use_ajax_flags_widget'] = array(
       '#type' => 'radios',
       '#title' => t('Refresh widget'),
       '#options' => views_flag_refresh_widget_options_get(),
       '#default_value' => $default_value ? $default_value : 'default',
       '#description' => t('The widget alters the display of the view as it is refreshing, for example by adding a throbber or textual message.')
     );
-
-    // Makes sure buttons are at the bottom.
-    $form['buttons']['#weight'] = 10;
 
     // Adds our custom submit handler before the default so we don't have to
     // re-cache the view in order to add our custom option.
@@ -120,16 +119,16 @@ function views_flag_refresh_preprocess_views_view(&$vars) {
  *   An object containing the view.
  */
 function views_flag_refresh_add_js($view) {
-  static $processed;
+  $processed = drupal_static(__FUNCTION__);
 
   // Only adds the core javascript files and settings once. The file isn't a
   // problem, but the settings become an array if they are added more than once.
   if (NULL === $processed) {
     $path = drupal_get_path('module', 'views_flag_refresh');
-    drupal_add_js($path .'/views_flag_refresh.js');
+    drupal_add_js($path . '/views_flag_refresh.js');
     $settings = array(
       'viewsFlagRefresh' => array(
-        'imagePath' => base_path() . $path .'/images',
+        'imagePath' => base_path() . $path . '/images',
       ),
     );
     drupal_add_js($settings, 'setting');
@@ -157,7 +156,7 @@ function views_flag_refresh_add_js($view) {
       }
 
       // Adds widget information to the javascript settings.
-      $key = $view->name .'-'. $view->current_display;
+      $key = $view->name . '-' . $view->current_display;
       $settings['viewsFlagRefresh']['flags'][$flag_name][$key] = array(
         'themeHook' => isset($widgets[$widget]['theme hook']) ? $widgets[$widget]['theme hook'] : FALSE,
         'themeHookPost' => isset($widgets[$widget]['theme hook post']) ? $widgets[$widget]['theme hook post'] : FALSE,
@@ -183,7 +182,7 @@ function views_flag_refresh_views_flag_refresh_widgets() {
     'theme hook'      => 'throbber',
     'theme hook post' => 'throbberPost',
     'description'     => t('Display a throbber image in place of the view content while it is being refreshed.'),
-    'css file'        => drupal_get_path('module', 'views_flag_refresh') .'/views_flag_refresh.css',
+    'css file'        => drupal_get_path('module', 'views_flag_refresh') . '/views_flag_refresh.css',
   );
 
   return $widgets;

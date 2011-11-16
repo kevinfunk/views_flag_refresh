@@ -2,9 +2,9 @@
 /**
  * Event handler that listens for flags selected by the user.
  */
-$(document).bind('flagGlobalAfterLinkUpdate', function(event, data) {
+jQuery(document).bind('flagGlobalAfterLinkUpdate', function(event, data) {
   var refresh = new viewsFlagRefresh(data.flagName);
-  $.each(Drupal.settings.views.ajaxViews, function(index, settings) {
+  jQuery.each(Drupal.settings.views.ajaxViews, function(index, settings) {
     refresh.ajax(settings);
   });
 });
@@ -74,18 +74,15 @@ viewsFlagRefresh.ajaxSettings = function(view, settings, theme) {
     url: viewsFlagRefresh.ajaxPath(),
     type: 'GET',
     data: settings,
-    success: function(response) {
-      // Invokes theme hook, adds content retrieved from call.
-      if (response.__callbacks) {
-        $.each(response.__callbacks, function(i, callback) {
-          eval(callback)(theme.target, response);
-          // @todo Use an alternate callback so we don't have to do this??
-          $(view).filter(function() { return !$(this).parents('.view').size(); }).each(function() {
-            theme.target = this;
-            theme.hookInvoke('themeHookPost');
-          });
-        });
-      }
+    success: function(response, status) {
+      // Handle ajax response.
+      jQuery(view).data('viewsFlagRefresh_ajax').success(response, status);
+
+      // Invokes theme hook.
+      jQuery(view).filter(function() { return !jQuery(this).parents('.view').size(); }).each(function() {
+        theme.target = this;
+        theme.hookInvoke('themeHookPost');
+      });
     },
     error: function() {
       // Invokes theme hook, handles errors gracefully.
@@ -111,13 +108,28 @@ viewsFlagRefresh.prototype.ajax = function(settings) {
 
   // Calculates the selector for the view.
   var view = '.view-dom-id-' + settings.view_dom_id;
-  if (!$(view).size()) {
+  if (!jQuery(view).size()) {
     view = '.view-id-' + settings.view_name + '.view-display-id-' + settings.view_display_id;
   }
-  
+
   // Locates the view, AJAX refreshes the content.
-  $(view).filter(function() { return !$(this).parents('.view').size(); }).each(function() {
+  jQuery(view).filter(function() { return !jQuery(this).parents('.view').size(); }).each(function() {
     var target = this;
+
+    // create ajax object to handle the response.
+    if (jQuery(target).data('viewsFlagRefresh_ajax') == null) {
+      // TODO: Find a way to handle ajax commands without creating an ajax object.
+      var element_settings = {
+        url: viewsFlagRefresh.ajaxPath(),
+        submit: {},
+        setClick: true,
+        event: 'click',
+        selector: view,
+        progress: { type: 'throbber' }
+      };
+
+      jQuery(target).data('viewsFlagRefresh_ajax', new Drupal.ajax(false, view, element_settings));
+    }
     
     // Instantiates the theme object, invokes the widget's theme hook.
     var theme = new viewsFlagRefresh.theme(target, widgetSettings);
@@ -126,12 +138,12 @@ viewsFlagRefresh.prototype.ajax = function(settings) {
     // Gets AJAX settings, either refreshes the view or submits the exposed
     // filter form. This latter refreshes the view and maintains the filters.
     var ajaxSettings = viewsFlagRefresh.ajaxSettings(view, settings, theme);
-    var exposedForm = $('form#views-exposed-form-' + settings.view_name.replace(/_/g, '-') + '-' + settings.view_display_id.replace(/_/g, '-'));
+    var exposedForm = jQuery('form#views-exposed-form-' + settings.view_name.replace(/_/g, '-') + '-' + settings.view_display_id.replace(/_/g, '-'));
     if (exposedForm.size()) {
-      setTimeout(function() { $(exposedForm).ajaxSubmit(ajaxSettings); }, theme.timeout);
+      setTimeout(function() { jQuery(exposedForm).ajaxSubmit(ajaxSettings); }, theme.timeout);
     }
     else {
-      setTimeout(function() { $.ajax(ajaxSettings); }, theme.timeout);
+      setTimeout(function() { jQuery.ajax(ajaxSettings); }, theme.timeout);
     }
   });
 }
@@ -171,17 +183,17 @@ viewsFlagRefresh.theme.prototype.hookInvoke = function(hookType) {
  */
 viewsFlagRefresh.theme.prototype.throbber = function() {
   // Hide the content of the view.
-  $(this.target).css('visibility', 'hidden');
+  jQuery(this.target).css('visibility', 'hidden');
   
   // Captures parent, as the view is usually in something such as a block.
-  var container = $(this.target).parent();
+  var container = jQuery(this.target).parent();
   
   // Adds our throbber to the middle of the view.
   // NOTE: The throbber image is 32px wide.
-  var pos = $(container).position();
-  this.throbberElement = $('<img src="' + Drupal.settings.viewsFlagRefresh.imagePath + '/throbber.gif" class="views_flag_refresh-throbber" />')
-    .css('left', pos.left + ($(container).outerWidth() / 2) - 16)
-    .css('top', pos.top + ($(container).outerHeight() / 2) - 16)
+  var pos = jQuery(container).position();
+  this.throbberElement = jQuery('<img src="' + Drupal.settings.viewsFlagRefresh.imagePath + '/throbber.gif" class="views_flag_refresh-throbber" />')
+    .css('left', pos.left + (jQuery(container).outerWidth() / 2) - 16)
+    .css('top', pos.top + (jQuery(container).outerHeight() / 2) - 16)
     .insertAfter(this.target);
 }
 
@@ -192,5 +204,5 @@ viewsFlagRefresh.theme.prototype.throbber = function() {
  *   A jQuery object containing the view being refreshed.
  */
 viewsFlagRefresh.theme.prototype.throbberPost = function() {
-  $(this.throbberElement).remove();
+  jQuery(this.throbberElement).remove();
 }
