@@ -7,6 +7,15 @@
  */
 
 /**
+ * Implements hook_views_api().
+ */
+function views_flag_refresh_views_api() {
+  return array(
+    'api' => '3',
+  );
+}
+
+/**
  * Returns an array of flags keyed by machine readable name to an escaped
  * display name.
  *
@@ -54,50 +63,6 @@ function views_flag_refresh_widgets_get($reset = FALSE) {
     drupal_alter('views_flag_refresh_widgets', $widgets);
   }
   return $widgets;
-}
-
-/**
- * Implementation of hook_form_FORM_ID_alter().
- */
-function views_flag_refresh_form_views_ui_edit_display_form_alter(&$form, &$form_state) {
-  if ('use_ajax' == $form_state['section']) {
-
-    $display = &$form_state['view']->display[$form_state['display_id']];
-
-    $form['options']['use_ajax_flags'] = array(
-      '#type' => 'checkboxes',
-      '#title' => t('Refresh display on flags'),
-      '#options' => views_flag_refresh_flag_options_get(),
-      '#default_value' => (array)$display->handler->get_option('use_ajax_flags'),
-      '#description' => t('Refreshes the display via AJAX whenever a user clicks one of the selected flags. This will only take effect if the <em>Use AJAX</em> option is set to <em>Yes</em>.'),
-    );
-
-    $default_value = $display->handler->get_option('use_ajax_flags_widget');
-    $form['options']['use_ajax_flags_widget'] = array(
-      '#type' => 'radios',
-      '#title' => t('Refresh widget'),
-      '#options' => views_flag_refresh_widget_options_get(),
-      '#default_value' => $default_value ? $default_value : 'default',
-      '#description' => t('The widget alters the display of the view as it is refreshing, for example by adding a throbber or textual message.')
-    );
-
-    // Adds our custom submit handler before the default so we don't have to
-    // re-cache the view in order to add our custom option.
-    // NOTE: $form['#submit'] doesn't work here.
-    array_unshift(
-      $form['buttons']['submit']['#submit'],
-      'views_flag_refresh_views_ui_edit_display_form_submit'
-    );
-  }
-}
-
-/**
- * Processes views_ui_edit_display_form form submissions.
- */
-function views_flag_refresh_views_ui_edit_display_form_submit(&$form, &$form_state) {
-  $display = &$form_state['view']->display[$form_state['display_id']];
-  $display->handler->set_option('use_ajax_flags', $form_state['values']['use_ajax_flags']);
-  $display->handler->set_option('use_ajax_flags_widget', $form_state['values']['use_ajax_flags_widget']);
 }
 
 /**
