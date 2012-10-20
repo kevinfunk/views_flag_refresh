@@ -19,7 +19,7 @@ function views_flag_refresh_views_api() {
  * Returns an array of flags keyed by machine readable name to an escaped
  * display name.
  *
- * @return
+ * @return array
  *   An array of options.
  */
 function views_flag_refresh_flag_options_get() {
@@ -34,7 +34,7 @@ function views_flag_refresh_flag_options_get() {
  * Returns an array of widgets keyed by machine readable name to an escaped
  * display name.
  *
- * @return
+ * @return array
  *   An array of options.
  */
 function views_flag_refresh_widget_options_get() {
@@ -49,10 +49,10 @@ function views_flag_refresh_widget_options_get() {
  * Returns widget definitions from hook_views_flag_refresh_widgets()
  * implementations.
  *
- * @param $reset
+ * @param bool $reset
  *   A boolean flagging whether the static should be reset.
  *
- * @return
+ * @return array
  *   An array of widget definitions.
  */
 function views_flag_refresh_widgets_get($reset = FALSE) {
@@ -80,7 +80,7 @@ function views_flag_refresh_preprocess_views_view(&$vars) {
  * Adds javascript settings for the view, makes sure the core javascript and
  * settings files
  *
- * @param $view
+ * @param object $view
  *   An object containing the view.
  */
 function views_flag_refresh_add_js($view) {
@@ -105,7 +105,7 @@ function views_flag_refresh_add_js($view) {
 
   // Adds our view specific settings and javascript files.
   $settings = array('viewsFlagRefresh' => array());
-  $flags = (array)$view->display_handler->get_option('use_ajax_flags');
+  $flags = (array) $view->display_handler->get_option('use_ajax_flags');
   foreach ($flags as $flag_name => $enabled) {
     if ($enabled) {
 
@@ -132,7 +132,7 @@ function views_flag_refresh_add_js($view) {
 }
 
 /**
- * Implementation of hook_views_flag_refresh_widgets().
+ * Implements hook_views_flag_refresh_widgets().
  */
 function views_flag_refresh_views_flag_refresh_widgets() {
   $widgets = array();

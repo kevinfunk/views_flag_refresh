@@ -8,7 +8,7 @@
 /**
  * Defines refresh widgets that are displayed when a view is being refreshed.
  *
- * @return
+ * @return array
  *   An array of widget definitions.
  */
 function hook_views_flag_refresh_widgets() {
@@ -41,11 +41,11 @@ function hook_views_flag_refresh_widgets() {
     // Usually the file contains the methods defined in the "theme hook" and
     // "theme hook post" keys above.
     // (OPTIONAL)
-    'js file' => drupal_get_path('module', 'views_flag_refresh') .'/views_flag_refresh.js',
+    'js file' => drupal_get_path('module', 'views_flag_refresh') . '/views_flag_refresh.js',
 
     // Specifies a CSS file that must be loaded to render the widget properly.
     // (OPTIONAL)
-    'css file' => drupal_get_path('module', 'views_flag_refresh') .'/views_flag_refresh.css',
+    'css file' => drupal_get_path('module', 'views_flag_refresh') . '/views_flag_refresh.css',
   );
 
   return $widgets;
@@ -54,12 +54,12 @@ function hook_views_flag_refresh_widgets() {
 /**
  * Allows modules to alter widget definitions.
  *
- * @param &$widgets
+ * @param array $widgets
  *   An array of widget definitions.
  */
 function hook_views_flag_refresh_widgets_alter(&$widgets) {
   // NOTE: This code is for demonstration purposes only. We are probably better
   // off creating another widget.
   $widgets['throbber']['theme hook'] = 'betterThrobber';
-  $widgets['throbber']['js file'] = drupal_get_path('module', 'mymodule') .'/mymodule.js';
+  $widgets['throbber']['js file'] = drupal_get_path('module', 'mymodule') . '/mymodule.js';
 }

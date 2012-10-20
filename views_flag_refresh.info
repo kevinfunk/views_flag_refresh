@@ -4,3 +4,6 @@ dependencies[] = flag
 dependencies[] = views
 core = 7.x
 package = Views
+
+files[] = views_flag_refresh.views.inc
+files[] = views_flag_refresh_plugin_display_extender.inc
