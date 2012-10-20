@@ -35,6 +35,13 @@ class views_flag_refresh_plugin_display_extender extends views_plugin_display_ex
           '#description' => t('Refreshes the display via AJAX whenever a user clicks one of the selected flags. This will only take effect if the <em>Use AJAX</em> option is set to <em>Yes</em>.'),
         );
 
+        $form['use_ajax_flags_noscrolltop'] = array(
+          '#type' => 'checkbox',
+          '#title' => t('Disable scroll to top of this view.'),
+          '#default_value' => $this->display->get_option('use_ajax_flags_noscrolltop'),
+          '#description' => t('Check if you want disable scroll to the top of this view after AJAX update.'),
+        );
+
         $default_value = $this->display->get_option('use_ajax_flags_widget');
         $form['use_ajax_flags_widget'] = array(
           '#type' => 'radios',

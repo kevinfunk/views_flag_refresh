@@ -152,3 +152,17 @@ function views_flag_refresh_views_flag_refresh_widgets() {
 
   return $widgets;
 }
+
+/**
+ * Implements hook_views_ajax_data_alter().
+ */
+function views_flag_refresh_views_ajax_data_alter(&$commands, $view) {
+  if ($view->query->pager->display->handler->options['use_ajax_flags_noscrolltop']) {
+    foreach ($commands as $key => $command) {
+      // Remove scrollTop command.
+      if ($command['command'] == 'viewsScrollTop') {
+        unset($commands[$key]);
+      }
+    }
+  }
+}
