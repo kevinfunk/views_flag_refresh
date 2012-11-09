@@ -13,12 +13,31 @@
 class views_flag_refresh_plugin_display_extender extends views_plugin_display_extender {
 
   /**
-   * Provide a form to edit options for this plugin.
+   *  List of new options added by plugin.
    */
-  function option_definition(&$options = array()) {
+  protected function add_options(&$options = array()) {
     $options['use_ajax_flags'] = array('default' => FALSE);
     $options['use_ajax_flags_noscrolltop'] = array('default' => 0);
     $options['use_ajax_flags_widget'] = array('default' => 'default');
+  }
+
+  /**
+   * Provide a form to edit options for this plugin.
+   *
+   * Added in Views 3.5.
+   */
+  function options_definition_alter(&$options = array()) {
+    $this->add_options($options);
+  }
+
+  /**
+   * Provide a form to edit options for this plugin.
+   *
+   * Used in Views prior to 3.5.
+   */
+  function option_definition(&$options = array()) {
+    $this->add_options($options);
+    return $options;
   }
 
   /**
