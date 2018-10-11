@@ -6,4 +6,4 @@ refresh_ajax:
     - core/jquery
     - core/drupal
     - core/drupalSettings
-    - views.ajax
+    - views/views.ajax
