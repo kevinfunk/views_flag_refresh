@@ -42,7 +42,7 @@ class RequestSubscriber implements EventSubscriberInterface {
   /**
    * Handles response event.
    *
-   * @param \Symfony\Component\HttpKernel\Event\FilterResponseEvent $event
+   * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
    *   The event to process.
    */
   public function onResponse(FilterResponseEvent $event) {
